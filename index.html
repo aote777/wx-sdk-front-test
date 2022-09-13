@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>wx-sdk-test</title>
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/axios@0.27.2/dist/axios.min.js"></script> -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.27.2/axios.min.js"></script>
+
+    <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
+    <script>
+      // VConsole will be exported to `window.VConsole` by default.
+      var vConsole = new window.VConsole()
+      window.wx = wx
+    </script>
+  </head>
+  <body>
+    <script>
+      // const curUrl = encodeURIComponent(window.location.href.split('#')[0])
+      const curUrl = window.location.href.split('#')[0]
+      console.log('sdk传入url参数', curUrl)
+
+      axios
+        .get(
+          // 临时测试
+          'http://5940b830.r2.cpolar.top/get-wx-config?url=' +
+            // i龙华正式
+            // 'https://ilh.szlhq.gov.cn/applet-support-services/getwx/getwxSignature?url=' +
+            curUrl
+        )
+        .then((result) => {
+          console.log('-微信初始化接口--result1', result)
+          // 高仕超
+          const data = result.data
+          // i龙华正式
+          // const data = result.data.data
+          window.wx.config({
+            debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+            appId: data.appId, // 必填，企业号的唯一标识，此处填写企业号corpid
+            timestamp: data.timestamp, // 必填，生成签名的时间戳
+            nonceStr: data.nonceStr, // 必填，生成签名的随机串
+            signature: data.signature, // 必填，签名，见附录1
+            jsApiList: ['getLocation', 'openLocation'], // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            openTagList: ['wx-open-launch-app'],
+
+            /* debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+            appId: "wx825fabce187cbb01", // 必填，企业号的唯一标识，此处填写企业号corpid
+            timestamp: "1650271045", // 必填，生成签名的时间戳
+            nonceStr: "Wm3WZYTPz0wzccnN", // 必填，生成签名的随机串
+            signature: "27092eccb61912d1d8389fffe71581e7276101a7", // 必填，签名，见附录1
+            jsApiList: ["getLocation",'openLocation'], // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            // openTagList: ["wx-open-launch-app"], */
+          })
+          window.wx.ready(function (c) {
+            console.log('wx.ready-success', c)
+            // config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。
+            window.wx.checkJsApi({
+              jsApiList: ['getLocation', 'openLocation'], // 需要检测的JS接口列表，所有JS接口列表见附录2,
+              success: function (res) {
+                console.log('---checkJsApi', res)
+              },
+              fail(err) {
+                console.log('checkerr', err)
+              },
+            })
+          })
+
+          window.wx.error(function (res) {
+            console.log('---wx.error' + JSON.stringify(res))
+            // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
+          })
+        })
+        .catch((err) => {
+          console.log('-微信初始化接口报错--err', err)
+        })
+    </script>
+  </body>
+</html>
